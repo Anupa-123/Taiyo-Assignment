@@ -1,7 +1,6 @@
 # Taiyo-Assignment
-About the Task.
-
-Create a scraper to get data from one of the following websites. The scrapper file should be in
+The Task is to
+create a scraper to get data from one of the following websites. The scrapper file should be in
 the .py format and scrapper must have a single python class which will be called to get the required data.
 The output should be in the csv format. Requirements:
 ● Only pick one of your trial tasks from the sources listed below
