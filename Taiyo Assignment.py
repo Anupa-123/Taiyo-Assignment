@@ -1,0 +1,301 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[2]:
+
+
+pip install selenium
+
+
+# In[13]:
+
+
+pip install --upgrade selenium
+
+
+# In[20]:
+
+
+pip install webdriver_manager
+
+
+# In[1]:
+
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+
+# In[2]:
+
+
+import urllib.request
+import pandas
+from bs4 import BeautifulSoup 
+import warnings
+warnings.filterwarnings('ignore')
+
+
+# In[3]:
+
+
+import urllib3
+import requests
+
+
+# In[4]:
+
+
+from selenium import webdriver
+browser = webdriver.Chrome()
+
+
+# In[5]:
+
+
+import json
+import os
+import pandas as pd
+import time
+from selenium import webdriver
+from bs4 import BeautifulSoup
+
+
+# In[6]:
+
+
+### Get access to the HTML of the Page:l
+url = "https://www.earthdata.nasa.gov/"
+html = urllib.request.urlopen(url)
+
+
+# In[7]:
+
+
+# The HTML content of the page is in html. Transform it into a BeautifulSoup object. 
+soup = BeautifulSoup(html,'html.parser')
+
+
+# In[8]:
+
+
+browser.get("https://www.earthdata.nasa.gov/")
+
+
+# In[9]:
+
+
+### lets look for the div tags.
+span_tag1 = soup.find_all("span", {"class" : "title"})
+len(span_tag1)
+
+
+# In[10]:
+
+
+name = []
+for i in span_tag1:
+    name.append(i.text)
+
+
+# In[11]:
+
+
+name
+
+
+# In[12]:
+
+
+class MyScraper:
+    def __init__(self, url):
+        self.url = url
+
+    def scrape_data(self):
+        try:
+            # HTTP request to the NASA Earth Data website
+            response = requests.get(self.url)
+            response.raise_for_status()
+
+            # Parse the HTML content
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Define the headings we want to target
+            headings_to_extract = ["Data", "Topics", "Learn", "Engage", "About"]
+            
+
+            # Initialize a dictionary to store the extracted data
+            extracted_data = {}
+
+            for heading_text in headings_to_extract:
+                # Find the heading element with the specified text
+                heading_element = soup.find('h2', text=heading_text)
+                
+                if heading_element:
+                    # Find the data associated with the heading (modify this based on the website's structure)
+                    # For example, if the data is in a sibling <ul> element, you can do:
+                    data_elements = heading_element.find_next('ul').find_all('li')
+
+                    # Extract and store the data associated with the heading
+                    extracted_data[heading_text] = [element.text.strip() for element in data_elements]
+
+            # process or print the extracted data as needed
+            print(extracted_data)
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+if __name__ == '__main__':
+    # url
+    url = 'https://www.earthdata.nasa.gov/'
+    scraper = MyScraper(url)
+    scraper.scrape_data()
+
+
+# In[ ]:
+
+
+
+
+
+# In[14]:
+
+
+#scrap the data and save it into CSV
+class MyScraper:
+    def __init__(self, url):
+        self.url = url
+
+    def scrape_data(self):
+        try:
+            # HTTP request to the NASA Earth Data website
+            response = requests.get(self.url)
+            response.raise_for_status()
+
+            # Parse the HTML content
+            soup = BeautifulSoup(response.text, 'html.parser')
+
+            # Define the headings we want to target
+            headings_to_extract = ["Data", "Topics", "Learn", "Engage", "About"]
+
+            # Initialize a dictionary to store the extracted data
+            extracted_data = {}
+
+            for heading_text in headings_to_extract:
+                # Find the heading element with the specified text
+                heading_element = soup.find('h2', text=heading_text)
+
+                if heading_element:
+                    # Find the data associated with the heading (modify this based on the website's structure)
+                    # For example, if the data is in a sibling <ul> element, you can do:
+                    data_elements = heading_element.find_next('ul').find_all('li')
+
+                    # Extract and store the data associated with the heading
+                    extracted_data[heading_text] = [element.text.strip() for element in data_elements]
+
+            # Determine the maximum length among all sections
+            max_length = max(len(extracted_data[heading]) for heading in headings_to_extract)
+
+            # Pad shorter sections with empty strings to match the maximum length
+            for heading in headings_to_extract:
+                extracted_data[heading] += [''] * (max_length - len(extracted_data[heading]))
+
+            # Create a DataFrame from the extracted data
+            df = pd.DataFrame(extracted_data)
+
+            # Save the formatted DataFrame to a CSV file
+            df.to_csv('nasa_earth_data.csv', index=False)
+
+            print("Data extraction and CSV save successful.")
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+if __name__ == '__main__':
+    # URL
+    url = 'https://www.earthdata.nasa.gov/'
+    scraper = MyScraper(url)
+    scraper.scrape_data()
+
+
+# In[ ]:
+
+
+
+
+
+# In[15]:
+
+
+# Web scrapping by input location
+class Web_Scraping:
+    
+    def __init__(self, location):   
+        self.location = location
+        
+    def selenium_webdriver(self):     
+        # Hit the url of NASA Earth Data website and wait for 15 seconds.
+        url = ('https://earthdata.nasa.gov/search?q={location}'.format(location = self.location))
+        browser.get(url)
+        time.sleep(15)
+        
+        # Driver scrolls down 25 times to load the table.
+        for i in range(0,30):
+            browser.execute_script("window.scrollBy(0,6000)")
+            time.sleep(10)
+            
+        # Fetch the webpage and store in a variable.
+        webpage = browser.page_source
+        
+        # Parse the page using BeautifulSoup
+        HTMLPage = BeautifulSoup(webpage, 'html.parser')
+        
+        titles = []
+        description = []
+        links = []
+
+        for lists in HTMLPage.find_all(class_ = 'result'):
+            if (lists.span.text != '' and len(lists.find_all('p')) != 0):
+                titles.append(lists.span.text)
+                description.append(lists.find('p', class_ = '').text)
+                links.append(lists.find('p', class_ = 'search-link').text)
+        
+        # Create a DataFrame
+        df = pd.DataFrame(list(zip(titles, description, links)),
+               columns =['title', 'description', 'link'])
+        
+        display(df)
+        
+        # Store to csv file
+        df.to_csv('output.csv', sep=',', index=False,header=True)
+        
+        print('Web Scraping Successful!')
+
+
+# In[16]:
+
+
+keyword = input('Enter Keyword to be searched: ').lower()
+location = input('Enter Location: ').lower()
+ws = Web_Scraping('India')
+ws.selenium_webdriver()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
